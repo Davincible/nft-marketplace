@@ -1,12 +1,78 @@
 ---
 version: '3.8'
 services:
-  hardhat:
-    build:
-      context: ./
-      dockerfile: Dockerfile
+  ## BSC RPC Node - JSON-RPC Server to access the blockchain.
+  bsc-rpc:
+    image: bsc:local
+    restart: always
     ports:
       - 8545:8545
-    restart: always
+      - 8546:8546
+    command:
+      - --datadir=/var/lib/bsc
+      - --ipcpath=/tmp/geth.ipc
+      - --nodekeyhex=b0ac22adcad37213c7c565810a50f1772291e7b0ce53fb73e7ec2a3c75bc13b5
+      - --nodiscover
+      - --networkid=5568
+      - --ethstats=bcs-rpc:bscpwd@netstats:3000
+      - --http
+      - --http.api=eth,debug,net,admin,web3,personal,txpool
+      - --http.addr=0.0.0.0
+      - --http.port=8545
+      - --http.corsdomain=*
+      - --http.vhosts=*
+      - --ws 
+      - --ws.addr=0.0.0.0
+      - --ws.port=8546 
+      - --ws.origins=* 
+      - --ws.api=eth,debug,net,admin,web3,personal,txpool
     volumes:
-      - ./deployments:/app/deployments
+      - ./accounts:/app/accounts
+      - tmp:/tmp
+
+  ## BSC Validator Node - Performs the block mining.
+  bsc-validator:
+    image: bsc:local
+    restart: always
+    command:
+      - --config=/config/validator.toml
+      - --bootnodes=enode://af22c29c316ad069cf48a09a4ad5cf04a251b411e45098888d114c6dd7f489a13786620d5953738762afa13711d4ffb3b19aa5de772d8af72f851f7e9c5b164a@bsc-rpc:30303
+      - --networkid=5568
+      - --datadir=/var/lib/bsc
+      - --keystore=/accounts
+      - --verbosity=2
+      - --mine
+      - --miner.threads=2
+      - --miner.etherbase=0x59b02d4d2f94ea5c55230715a58ebb0b703bcd4b
+      - --unlock=0x59b02D4d2F94ea5c55230715a58EBb0b703bCD4B
+      - --password=/dev/null
+      - --light.serve=50
+      - --ethstats=bcs-miner:bscpwd@netstats:3000
+    volumes:
+      - ./accounts:/accounts
+      - ./config:/config
+
+  ## Netstats Dashboard - Contains metrics about the blockchain.
+  netstats:
+    image: netstats:local
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      WS_SECRET: bscpwd
+
+  bsc-init:
+    image: bsc-init:local
+    depends_on:
+      - bsc-validator
+    environment:
+      # For some reason this doesn't work, have to use UNIX socket.
+      # ADDRESS: http://bsc:8545
+      KEYSTORE_DIR: /etc/geth/accounts
+      COINBASE_ADDR: 0x7fd60C817837dCFEFCa6D0A52A44980d12F70C59
+    volumes:
+      - ./accounts:/etc/geth/accounts
+      - tmp:/tmp
+volumes:
+  tmp:
+    driver: local

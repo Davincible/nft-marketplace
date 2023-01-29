@@ -1,0 +1,19 @@
+FROM 	golang:alpine AS builder
+
+ENV 	CGO_ENABLED=0 GOOS=linux
+
+RUN 	apk add --no-cache make gcc musl-dev linux-headers git
+
+WORKDIR /app
+
+COPY 	. .
+
+RUN 	--mount=type=cache,mode=0755,target=/go go mod download
+RUN 	--mount=type=cache,mode=0755,target=/go go build -o bin/bsc-init cmd/bsc-init/main.go
+
+## --
+FROM 	scratch
+
+COPY 	--from=builder /app/bin/bsc-init /bsc-init
+
+ENTRYPOINT [ "/bsc-init" ]

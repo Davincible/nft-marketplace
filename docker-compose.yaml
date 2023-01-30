@@ -2,55 +2,37 @@
 version: '3.8'
 services:
   ## BSC RPC Node - JSON-RPC Server to access the blockchain.
-  bsc-rpc:
+  bsc-rpc: # This is the bootstrap node
     image: bsc:local
     restart: always
+    env_file: .env
     ports:
       - 8545:8545
       - 8546:8546
-    command:
-      - --datadir=/var/lib/bsc
-      - --ipcpath=/tmp/geth.ipc
-      - --nodekeyhex=b0ac22adcad37213c7c565810a50f1772291e7b0ce53fb73e7ec2a3c75bc13b5
-      - --nodiscover
-      - --networkid=5568
-      - --ethstats=bcs-rpc:bscpwd@netstats:3000
-      - --http
-      - --http.api=eth,debug,net,admin,web3,personal,txpool
-      - --http.addr=0.0.0.0
-      - --http.port=8545
-      - --http.corsdomain=*
-      - --http.vhosts=*
-      - --ws 
-      - --ws.addr=0.0.0.0
-      - --ws.port=8546 
-      - --ws.origins=* 
-      - --ws.api=eth,debug,net,admin,web3,personal,txpool
+    depends_on:
+      - netstats
+    environment:
+      NODE_ID: bsc-rpc
     volumes:
-      - ./accounts:/app/accounts
+      - ./bsc/bsc-rpc:/root/.ethereum
+      - ./scripts:/scripts
+      - ./config:/config
       - tmp:/tmp
+    command: ash /scripts/bsc-rpc.sh
 
   ## BSC Validator Node - Performs the block mining.
-  bsc-validator:
+  bsc-validator1:
     image: bsc:local
-    restart: always
-    command:
-      - --config=/config/validator.toml
-      - --bootnodes=enode://af22c29c316ad069cf48a09a4ad5cf04a251b411e45098888d114c6dd7f489a13786620d5953738762afa13711d4ffb3b19aa5de772d8af72f851f7e9c5b164a@bsc-rpc:30303
-      - --networkid=5568
-      - --datadir=/var/lib/bsc
-      - --keystore=/accounts
-      - --verbosity=2
-      - --mine
-      - --miner.threads=2
-      - --miner.etherbase=0x59b02d4d2f94ea5c55230715a58ebb0b703bcd4b
-      - --unlock=0x59b02D4d2F94ea5c55230715a58EBb0b703bCD4B
-      - --password=/dev/null
-      - --light.serve=50
-      - --ethstats=bcs-miner:bscpwd@netstats:3000
+    env_file: .env
+    depends_on:
+      - netstats
+    environment:
+      NODE_ID: bsc-validator
+      BOOTSTRAP_HOST: bsc-rpc
     volumes:
-      - ./accounts:/accounts
-      - ./config:/config
+      - ./bsc/bsc-validator1:/root/.ethereum
+      - ./scripts:/scripts
+    command: ash /scripts/bsc-validator.sh
 
   ## Netstats Dashboard - Contains metrics about the blockchain.
   netstats:
@@ -64,7 +46,7 @@ services:
   bsc-init:
     image: bsc-init:local
     depends_on:
-      - bsc-validator
+      - bsc-rpc
     environment:
       # For some reason this doesn't work, have to use UNIX socket.
       # ADDRESS: http://bsc:8545
@@ -76,3 +58,9 @@ services:
 volumes:
   tmp:
     driver: local
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: 99.99.0.0/16

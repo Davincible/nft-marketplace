@@ -59,7 +59,7 @@ func main() {
 			log.Fatalf("Failed to fetch balance: %v", err)
 		}
 
-		log.Printf("Balance of %s: %s ETH", acc.Address.Hex(), weiToEth(balance))
+		log.Printf("Balance of %s: %s BNB", acc.Address.Hex(), weiToEth(balance))
 	}
 }
 

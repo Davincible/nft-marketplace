@@ -1,5 +1,5 @@
 [Eth]
-NetworkId = 5568
+NetworkId = 99
 SyncMode = "full"
 NoPruning = false
 NoPrefetch = false
@@ -40,7 +40,7 @@ OracleThreshold = 100
 DataDir = ""
 InsecureUnlockAllowed = false
 NoUSB = true
-IPCPath = "/tmp/geth.ipc"
+IPCPath = "geth.ipc"
 
 [Node.P2P]
 MaxPeers = 50

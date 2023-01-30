@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  bsc-bootstrap:
+    image: bsc-bootstrap:local
+    env_file: .env
+    environment:
+      INIT_HOLDER_BALANCE: "500000000000000000000"
+      NUMS_OF_VALIDATOR: 1
+    volumes:
+      - ./bsc:/root/storage
+      - ./scripts:/root/scripts
+      - ./config:/root/config
+      - ./accounts:/root/init-holders
+    command: /root/scripts/bootstrap.sh
+    networks: 
+      - bsc-bootstrap-network
+networks:
+  bsc-bootstrap-network:
+    ipam:
+      driver: default

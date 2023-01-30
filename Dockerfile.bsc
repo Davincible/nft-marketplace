@@ -10,11 +10,9 @@ RUN 	make geth
 FROM 	alpine
 
 COPY 	--from=builder /app/build/bin/geth /bin/geth
-COPY 	genesis.json .
+
+RUN 	apk -U add findutils
 
 WORKDIR /var/lib/bsc
 
-RUN 	geth init /genesis.json --datadir=./
-RUN 	rm -f /var/lib/bsc/geth/nodekey
-
-ENTRYPOINT [ "geth" ]
+EXPOSE 30311 30311/udp

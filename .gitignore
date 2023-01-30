@@ -25,5 +25,7 @@ artifacts
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+bsc/
+
 # Compiled smart contracts
 build/

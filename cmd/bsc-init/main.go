@@ -21,9 +21,10 @@ var (
 	keystoreDir  = getEnv("KEYSTORE_DIR", "./accounts")
 	coinbaseAddr = getEnv("COINBASE_ADDR", "0x7fd60C817837dCFEFCa6D0A52A44980d12F70C59")
 
-	transfer = false
+	transfer       = true
+	transferAmount = 2
 
-	k = keystore.NewKeyStore(keystoreDir, keystore.StandardScryptN, keystore.StandardScryptP)
+	kstore = keystore.NewKeyStore(keystoreDir, keystore.StandardScryptN, keystore.StandardScryptP)
 )
 
 func main() {
@@ -31,30 +32,28 @@ func main() {
 	conn := connect(addr)
 	defer conn.Close()
 
-	log.Printf("Accounts loaded: %d\n", len(k.Accounts()))
+	log.Printf("Accounts loaded: %d\n", len(kstore.Accounts()))
 
 	coinbase := accounts.Account{Address: common.HexToAddress(coinbaseAddr)}
 
-	if err := k.Unlock(coinbase, ""); err != nil {
+	if err := kstore.Unlock(coinbase, ""); err != nil {
 		log.Fatalf("Failed to unlock coinbase account")
 	}
 
-	for _, acc := range k.Accounts() {
+	for _, acc := range kstore.Accounts() {
 		if transfer && acc.Address.String() != coinbaseAddr {
-			tx, err := sendTransaction(conn, coinbase, acc, 2)
+			log.Printf("Sending transaction of %d BNB, for shits 'n giggles, to %s", transferAmount, acc.Address.Hex())
+
+			_, err := sendTransaction(conn, coinbase, acc, transferAmount)
 			if err != nil {
-				log.Printf("Send transaction from %s to %s: %v", coinbase.Address.Hex(), acc.Address.Hex(), err)
+				log.Printf("Sending transaction failed: %v", err)
 				continue
 			}
 
-			if err := waitTransaction(conn, *tx); err != nil {
-				log.Fatalf("Wait for transaction: %v", err)
-			}
-
-			time.Sleep(time.Second)
+			time.Sleep(3 * time.Second)
 		}
 
-		balance, err := conn.BalanceAt(context.Background(), acc.Address, nil)
+		balance, err := conn.PendingBalanceAt(context.Background(), acc.Address)
 		if err != nil {
 			log.Fatalf("Failed to fetch balance: %v", err)
 		}
@@ -104,75 +103,37 @@ func weiToEth(w *big.Int) string {
 	return new(big.Rat).SetFrac(w, big.NewInt(1e18)).FloatString(18)
 }
 
-func sendTransaction(cl *ethclient.Client, from, to accounts.Account, amount int) (*common.Hash, error) {
+func sendTransaction(client *ethclient.Client, from, to accounts.Account, amount int) (*common.Hash, error) {
 	value := new(big.Int).Mul(big.NewInt(int64(amount)), big.NewInt(params.Ether))
 	gasLimit := uint64(21000)
 
-	chainid, err := cl.ChainID(context.Background())
+	chainid, err := client.ChainID(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	nonce, err := cl.PendingNonceAt(context.Background(), from.Address)
+	nonce, err := client.PendingNonceAt(context.Background(), from.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	tipCap, err := cl.SuggestGasTipCap(context.Background())
+	feeCap, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	feeCap, err := cl.SuggestGasPrice(context.Background())
-	if err != nil {
-		return nil, err
-	}
+	tx := types.NewTransaction(nonce, to.Address, value, gasLimit, feeCap, nil)
 
-	tx := types.NewTx(
-		&types.DynamicFeeTx{
-			ChainID:   chainid,
-			Nonce:     nonce,
-			GasTipCap: tipCap,
-			GasFeeCap: feeCap,
-			Gas:       gasLimit,
-			To:        &to.Address,
-			Value:     value,
-			Data:      nil,
-		})
-
-	signedTx, err := k.SignTx(from, tx, chainid)
+	signedTx, err := kstore.SignTx(from, tx, chainid)
 	if err != nil {
 		return nil, fmt.Errorf("sign transaction: %w", err)
 	}
 
-	b, err := tx.MarshalJSON()
-	if err != nil {
-		return nil, fmt.Errorf("marshal transaction: %w", err)
-	}
-
-	log.Printf("Sending transaction: %s\n", string(b))
-
-	if err := cl.SendTransaction(context.Background(), signedTx); err != nil {
+	if err := client.SendTransaction(context.Background(), signedTx); err != nil {
 		return nil, fmt.Errorf("send transaction: %w", err)
 	}
 
 	txHash := tx.Hash()
 
 	return &txHash, nil
-}
-
-func waitTransaction(conn *ethclient.Client, hash common.Hash) error {
-	for {
-		_, pending, err := conn.TransactionByHash(context.Background(), hash)
-		if !pending {
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		log.Println("Waiting for transaction: " + hash.String())
-		time.Sleep(100 * time.Millisecond)
-	}
 }

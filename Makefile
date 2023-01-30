@@ -23,3 +23,11 @@ bsc-bootstrap:
 docker-compose:
 	@docker compose up --remove-orphans
 
+.PHONY: compile-contracts
+compile-contracts:
+	@solc --abi --bin contracts/Greeter.sol -o build
+
+.PHONY: gen-bindings
+gen-bindings:
+	@abigen --abi build/Greeter.abi --pkg contracts --type Greeter --out contracts/Greeter.go --bin build/Greeter.bin
+

@@ -9,7 +9,7 @@ WORKDIR /app
 COPY 	. .
 
 RUN 	--mount=type=cache,mode=0755,target=/go go mod download
-RUN 	--mount=type=cache,mode=0755,target=/go go build -o bin/bsc-init cmd/bsc-init/main.go
+RUN 	--mount=type=cache,mode=0755,target=/go go build -o bin/bsc-init cmd/bsc-init/*.go
 
 ## --
 FROM 	scratch

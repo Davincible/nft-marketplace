@@ -1,34 +1,4 @@
 {
-  "name": "nft-marketplace",
-  "version": "1.0.0",
-  "description": "Contracts",
-  "main": "index.js",
-  "scripts": {
-    "dev": "hardhat node --network hardhat --watch --export-all deployments/manifest.json",
-    "console": "hardhat console",
-    "fork": "hardhat node --fork https://mainnet.infura.io/v3/f4b7c65997354c3783277ae1644ebdfd",
-    "test": "hardhat test --network hardhat",
-    "compile": "hardhat compile",
-    "local:deploy": "hardhat --network localhost deploy --export-all deployments/manifest.json",
-    "rinkeby:deploy": "hardhat --network rinkeby deploy --export-all deployments/manifest.json",
-    "goerli:deploy": "hardhat --network goerli deploy --export-all deployments/manifest.json",
-    "ropsten:deploy": "hardhat --network ropsten deploy --export-all deployments/manifest.json",
-    "mainnet:deploy": "hardhat --network mainnet deploy --export-all deployments/manifest.json",
-    "xdai:deploy": "hardhat --network xdai deploy --export-all deployments/manifest.json",
-    "accounts": "hardhat accounts",
-    "balance": "hardhat balance",
-    "send": "hardhat send",
-    "blockNumber": "hardhat blockNumber"
-  },
-  "author": "David Brouwer",
-  "license": "MIT",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
-    "hardhat": "^2.12.6",
-    "hardhat-deploy": "^0.11.22",
-    "typescript": "^4.9.4",
-    "uuid": "^9.0.0"
-  },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.1"
   }

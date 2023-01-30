@@ -25,9 +25,16 @@ docker-compose:
 
 .PHONY: compile-contracts
 compile-contracts:
-	@solc --abi --bin contracts/Greeter.sol -o build
+	@solc --abi --bin contracts/*.sol --overwrite --optimize -o build @openzeppelin=node_modules/@openzeppelin
+
+.PHONY: gen-bindings-contract
+gen-bindings-contract:
+	@abigen --abi build/$(contract).abi --pkg contracts --type $(contract) --out contracts/$(contract).go --bin build/$(contract).bin
 
 .PHONY: gen-bindings
 gen-bindings:
-	@abigen --abi build/Greeter.abi --pkg contracts --type Greeter --out contracts/Greeter.go --bin build/Greeter.bin
+	@make --no-print-directory gen-bindings-contract contract=Greeter
+	@make --no-print-directory gen-bindings-contract contract=KuiperNFT
+	@make --no-print-directory gen-bindings-contract contract=KuiperNFTFactory
+	@make --no-print-directory gen-bindings-contract contract=KuiperNFTMarketplace
 

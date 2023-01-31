@@ -15,7 +15,7 @@ consencus protocol will be spun up.
 
 All accounts available in the network can be found in the `accounts` folder.
 
-```
+```bash
 # Step 1: Build Docker containers. This takes a couple of minutes.
 # Step 2: Bootstrap tne BSC network. Also run this if you want to reset the network.
 # Step 3: Run the docker containers.
@@ -24,7 +24,7 @@ $ make docker-build bsc-bootstrap docker-compose
 
 ## Running tests
 
-```
+```bash
 # This runs a small progrom to demonstrate the usage of Go with web3.
 $ ADDRESS="http://localhost:8545" go run cmd/bsc-init/*.go
 
@@ -34,7 +34,7 @@ $ KEYSTORE_DIR="$(pwd)/accounts" go test -v ./cmd/nft-api/...
 
 ## Dev commands
 
-```
+```bash
 # Install Solidity dependencies.
 $ make init
 

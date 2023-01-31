@@ -29,7 +29,7 @@ $ make docker-build bsc-bootstrap docker-compose
 $ ADDRESS="http://localhost:8545" go run cmd/bsc-init/*.go
 
 # This runs the tests so far available.
-$ KEYSTORE_DIR="$(pwd)/accounts" go test -v ./cmd/nft-api/...
+$ KEYSTORE_DIR="$(pwd)/accounts" go test -v ./...
 ```
 
 ## Dev commands

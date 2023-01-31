@@ -9,10 +9,32 @@ RUN 	make geth
 ## ---
 FROM 	alpine
 
+ENV 	USER=docker
+ENV 	UID=1000
+ENV 	GID=1000
+ENV     BSC=/var/lib/bsc
+
+WORKDIR /home/docker
+
 COPY 	--from=builder /app/build/bin/geth /bin/geth
 
 RUN 	apk -U add findutils
 
-WORKDIR /var/lib/bsc
+RUN 	addgroup -S $USER && adduser \
+    	--disabled-password \
+    	--gecos "" \
+    	--home "$(pwd)" \
+    	--ingroup "$USER" \
+    	--no-create-home \
+    	--uid "$UID" \
+    	"$USER"
+
+RUN 	chown $USER:$USER /home/docker
+
+RUN 	mkdir $BSC && chown $USER:$USER $BSC
+
+USER 	$USER
+
+WORKDIR $BSC
 
 EXPOSE 30311 30311/udp

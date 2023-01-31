@@ -14,10 +14,10 @@ services:
     environment:
       NODE_ID: bsc-rpc
     volumes:
-      - ./bsc/bsc-rpc:/root/.ethereum
+      - ./bsc/bsc-rpc:/home/docker/.ethereum
       - ./scripts:/scripts
       - ./config:/config
-      - tmp:/tmp
+      - ./socket:/home/docker/socket
     command: ash /scripts/bsc-rpc.sh
 
   ## BSC Validator Node - Performs the block mining.
@@ -30,7 +30,7 @@ services:
       NODE_ID: bsc-validator
       BOOTSTRAP_HOST: bsc-rpc
     volumes:
-      - ./bsc/bsc-validator1:/root/.ethereum
+      - ./bsc/bsc-validator1:/home/docker/.ethereum
       - ./scripts:/scripts
     command: ash /scripts/bsc-validator.sh
 
@@ -42,6 +42,8 @@ services:
       - 3000:3000
     environment:
       WS_SECRET: bscpwd
+    logging:
+        driver: none
 
   bsc-init:
     image: bsc-init:local
@@ -50,11 +52,12 @@ services:
     environment:
       # For some reason this doesn't work, have to use UNIX socket.
       # ADDRESS: http://bsc:8545
+      ADDRESS: /socket/geth.ipc
       KEYSTORE_DIR: /etc/geth/accounts
       COINBASE_ADDR: 0x7fd60C817837dCFEFCa6D0A52A44980d12F70C59
     volumes:
       - ./accounts:/etc/geth/accounts
-      - tmp:/tmp
+      - ./socket:/socket
 volumes:
   tmp:
     driver: local

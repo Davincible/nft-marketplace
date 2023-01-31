@@ -39,7 +39,6 @@ OracleThreshold = 100
 [Node]
 DataDir = ""
 InsecureUnlockAllowed = false
-NoUSB = true
 IPCPath = "geth.ipc"
 
 [Node.P2P]

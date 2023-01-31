@@ -2,7 +2,7 @@
 
 source /scripts/utils.sh
 
-DATA_DIR=/root/.ethereum
+DATA_DIR=/home/docker/.ethereum
 
 wait_for_host_port "${BOOTSTRAP_HOST}" "${BOOTSTRAP_TCP_PORT}"
 
@@ -10,7 +10,6 @@ BOOTSTRAP_IP=$(get_host_ip "${BOOTSTRAP_HOST}")
 VALIDATOR_ADDR=$(cat ${DATA_DIR}/address)
 HOST_IP=$(hostname -i)
 
-echo "Validator IP: ${HOST_IP}"
 echo "Using validator address: ${VALIDATOR_ADDR}"
 
 geth --config "${DATA_DIR}/config.toml" \

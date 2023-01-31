@@ -16,12 +16,16 @@ docker-build:
 
 .PHONY: bsc-bootstrap
 bsc-bootstrap:
-	@make docker-build-bootstrap
+	@mkdir -p bsc socket
 	@docker compose -f docker-compose.bsc-bootstrap.yaml up 
 
 .PHONY: docker-compose
 docker-compose:
-	@docker compose up --remove-orphans
+	@docker compose up --remove-orphans 
+
+.PHONY: init 
+init:
+	@npm install
 
 .PHONY: compile-contracts
 compile-contracts:

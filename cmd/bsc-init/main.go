@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -9,7 +10,7 @@ import (
 )
 
 var (
-	addr         = getEnv("ADDRESS", "/tmp/geth.ipc")
+	addr         = getEnv("ADDRESS", "/socket/geth.ipc")
 	keystoreDir  = getEnv("KEYSTORE_DIR", "./accounts")
 	coinbaseAddr = getEnv("COINBASE_ADDR", "0x7fd60C817837dCFEFCa6D0A52A44980d12F70C59")
 
@@ -24,6 +25,8 @@ func main() {
 	conn := connect(addr)
 	defer conn.Close()
 
+	time.Sleep(10 * time.Second)
+
 	log.Printf("Accounts loaded: %d\n", len(kstore.Accounts()))
 
 	coinbase := accounts.Account{Address: common.HexToAddress(coinbaseAddr)}
@@ -33,7 +36,7 @@ func main() {
 
 	// Deploy a smart contract and interact with it.
 	if err := getGreeting(conn, coinbase); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	// Transfer BNB across accounts.

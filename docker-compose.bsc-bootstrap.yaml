@@ -7,11 +7,11 @@ services:
       INIT_HOLDER_BALANCE: "500000000000000000000"
       NUMS_OF_VALIDATOR: 1
     volumes:
-      - ./bsc:/root/storage
-      - ./scripts:/root/scripts
-      - ./config:/root/config
-      - ./accounts:/root/init-holders
-    command: /root/scripts/bootstrap.sh
+      - ./bsc:/home/docker/storage
+      - ./scripts:/home/docker/scripts
+      - ./config:/home/docker/config
+      - ./accounts:/home/docker/init-holders
+    command: /home/docker/scripts/bootstrap.sh
     networks: 
       - bsc-bootstrap-network
 networks:

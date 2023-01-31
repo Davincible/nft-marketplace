@@ -26,6 +26,8 @@ artifacts
 # vendor/
 
 bsc/
+socket/
 
 # Compiled smart contracts
 build/
+

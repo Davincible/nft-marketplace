@@ -1,11 +1,30 @@
 FROM 	ethereum/solc:0.6.4-alpine
 
+ENV 	USER=docker
+ENV 	UID=1000
+ENV 	GID=1000
+
+WORKDIR /home/docker
+
+RUN 	addgroup -S $USER && adduser \
+    	--disabled-password \
+    	--gecos "" \
+    	--home "$(pwd)" \
+    	--ingroup "$USER" \
+    	--no-create-home \
+    	--uid "$UID" \
+    	"$USER"
+
+RUN 	chown $USER:$USER /home/docker
+
 RUN 	apk update && apk --no-cache upgrade && apk add --d --no-cache ca-certificates npm nodejs bash alpine-sdk
 
-RUN 	git clone https://github.com/binance-chain/bsc-genesis-contract.git /root/genesis \
-    	&& rm /root/genesis/package-lock.json && cd /root/genesis && npm install
+USER 	$USER
 
-COPY 	scripts/init_holders.template /root/genesis/init_holders.template
+RUN 	git clone https://github.com/binance-chain/bsc-genesis-contract.git $HOME/genesis \
+    	&& rm $HOME/genesis/package-lock.json && cd $HOME/genesis && npm install && rm init_holders.template
+
+COPY 	scripts/init_holders.template /home/docker/genesis/init_holders.template
 
 COPY 	--from=bsc:local /bin/geth /usr/local/bin/geth
 
